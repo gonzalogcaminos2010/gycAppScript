@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body onload="loadOptions()">
+    Fecha: <input type="date" id="fecha"><br>
+    
+    <!-- Aquí insertaremos los campos de producto y cantidad -->
+    <div id="productos"></div>
+    
+    <button onclick="agregarProducto()">Agregar producto</button><br>
+
+    
+    Responsable: <input type="text" id="responsable"><br>
+    Observaciones: <input type="text" id="observaciones"><br>
+    <button onclick="createPedido()">Hacer Pedido</button>
+    <script>
+    var numProductos = 0;
+    
+    function agregarProducto() {
+      var divProductos = document.getElementById('productos');
+      
+      // Crear select para producto
+      var select = document.createElement('select');
+      select.id = 'producto' + numProductos;
+      select.innerHTML = '<option value="">Selecciona un producto</option>';
+      
+      // Crear input para cantidad
+      var input = document.createElement('input');
+      input.type = 'number';
+      input.id = 'cantidad' + numProductos;
+      
+      // Añadir a la página
+      divProductos.appendChild(document.createTextNode('Producto ' + (numProductos + 1) + ': '));
+      divProductos.appendChild(select);
+      divProductos.appendChild(document.createTextNode(' Cantidad ' + (numProductos + 1) + ': '));
+      divProductos.appendChild(input);
+      divProductos.appendChild(document.createElement('br'));
+      
+      // Incrementar contador
+      numProductos++;
+
+      // Cargar opciones para el nuevo select
+      loadOptions();
+    }
+    
+    function getFormValues() {
+      var fecha = document.getElementById('fecha').value;
+      var responsable = document.getElementById('responsable').value;
+      var observaciones = document.getElementById('observaciones').value;
+      
+      // Leer valores de producto y cantidad
+      var productos = [];
+      for (var i = 0; i < numProductos; i++) {
+        var producto = document.getElementById('producto' + i).value;
+        var cantidad = document.getElementById('cantidad' + i).value;
+        if (producto && cantidad) {
+          productos.push([producto, cantidad]);
+        }
+      }
+      
+      return [fecha, productos, responsable, observaciones];
+    }
+    
+    function createPedido() {
+      
+      google.script.run.withSuccessHandler(closeForm).createPedido(getFormValues());
+
+    }
+    
+    function closeForm() {
+      google.script.host.close();
+    }
+    
+    function loadOptions() {
+      google.script.run.withSuccessHandler(function(products) {
+        // Solo llenar las opciones del último select creado
+        var select = document.getElementById('producto' + (numProductos - 1));
+        products.forEach(function(product) {
+          var option = document.createElement('option');
+          option.value = product;
+          option.text = product;
+          select.add(option);
+        });
+      }).getProductList();
+    }
+    </script>
+  </body>
+</html>

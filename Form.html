@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body onload="loadOptions()">
+    Fecha: <input type="date" id="fecha"><br>
+    
+    <!-- Aquí insertaremos los campos de corona y cantidad -->
+    <div id="coronas"></div>
+    
+    <button onclick="agregarCorona()">Agregar Corona</button><br>
+
+    Responsable: <input type="text" id="responsable"><br>
+    Observaciones: <input type="text" id="observaciones"><br>
+    <button onclick="createCoronaFromForm()">Hacer Pedido de Corona</button>
+    <script>
+    var numCoronas = 0;
+    
+    function agregarCorona() {
+      var divCoronas = document.getElementById('coronas');
+      
+      // Crear select para corona
+      var select = document.createElement('select');
+      select.id = 'corona' + numCoronas;
+      select.innerHTML = '<option value="">Selecciona una corona</option>';
+      
+      // Crear input para cantidad
+      var input = document.createElement('input');
+      input.type = 'number';
+      input.id = 'cantidad' + numCoronas;
+      
+      // Añadir a la página
+      divCoronas.appendChild(document.createTextNode('Corona ' + (numCoronas + 1) + ': '));
+      divCoronas.appendChild(select);
+      divCoronas.appendChild(document.createTextNode(' Cantidad ' + (numCoronas + 1) + ': '));
+      divCoronas.appendChild(input);
+      divCoronas.appendChild(document.createElement('br'));
+      
+      // Incrementar contador
+      numCoronas++;
+
+      // Cargar opciones para el nuevo select
+      loadOptions();
+    }
+    
+    function getFormValues() {
+      var fecha = document.getElementById('fecha').value;
+      var responsable = document.getElementById('responsable').value;
+      var observaciones = document.getElementById('observaciones').value;
+      
+      // Leer valores de corona y cantidad
+      var coronas = [];
+      for (var i = 0; i < numCoronas; i++) {
+        var corona = document.getElementById('corona' + i).value;
+        var cantidad = document.getElementById('cantidad' + i).value;
+        if (corona && cantidad) {
+          coronas.push([corona, cantidad]);
+        }
+      }
+      
+      return [fecha, coronas, responsable, observaciones]; // Ya no incluye el número de pedido
+    }
+
+    
+    function closeForm() {
+      google.script.host.close();
+    }
+
+    function createCoronaFromForm() {
+  // Llama a la función 'createCorona' del lado del servidor
+  google.script.run.createCorona(getFormValues());
+  // Cierra el formulario cuando 'createCorona' se ejecuta con éxito
+  google.script.run.withSuccessHandler(closeForm);
+}
+    
+    function loadOptions() {
+      google.script.run.withSuccessHandler(function(coronas) {
+        // Solo llenar las opciones del último select creado
+        var select = document.getElementById('corona' + (numCoronas - 1));
+        coronas.forEach(function(corona) {
+          var option = document.createElement('option');
+          option.value = corona;
+          option.text = corona;
+          select.add(option);
+        });
+      }).getCoronaList();
+    }
+    </script>
+  </body>
+</html>
